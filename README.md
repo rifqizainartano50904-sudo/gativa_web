@@ -1,6 +1,6 @@
 <div align="center">
   <h1>🏥 Gativa Web Dashboard</h1>
-  <p><strong>Admin Dashboard for GARDA Mobile Application</strong></p>
+  <p><strong>Admin Dashboard for GATIVA Mobile Application</strong></p>
 </div>
 
 ---
