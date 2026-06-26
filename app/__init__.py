@@ -38,11 +38,9 @@ def create_app(config_class=Config):
 
     from app.main.routes import main
     from app.auth.routes import auth
-    from app.api.routes import api
     from app import models  # Register user_loader
 
     app.register_blueprint(main)
     app.register_blueprint(auth, url_prefix='/auth')
-    app.register_blueprint(api, url_prefix='/api')
 
     return app

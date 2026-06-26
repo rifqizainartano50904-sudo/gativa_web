@@ -65,10 +65,6 @@ def data_tenaga_kesehatan():
             
     return render_template('data_tenaga_kesehatan.html', title='Data Tenaga Kesehatan', users=tk_list, collection='tenaga_kesehatan')
 
-
-
-
-
 @main.route("/edit_user_data/<collection>/<doc_id>", methods=['POST'])
 @login_required
 @roles_required('Admin')

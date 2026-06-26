@@ -32,9 +32,9 @@ def login():
                             flash('Akses ditolak. Hanya Admin yang diizinkan untuk login ke panel ini.', 'danger')
                             return redirect(url_for('auth.login'))
                             
-                        if not user_data.get('is_verified', False):
-                            flash('Silakan verifikasi email Anda terlebih dahulu.', 'warning')
-                            return redirect(url_for('auth.verify_email', email=email))
+                        # if not user_data.get('is_verified', False):
+                        #     flash('Silakan verifikasi email Anda terlebih dahulu.', 'warning')
+                        #     return redirect(url_for('auth.verify_email', email=email))
                         
                         user_obj = FirebaseUser(user_data, user_doc.id)
                         login_user(user_obj, remember=request.form.get('remember'))
@@ -86,15 +86,12 @@ def register():
 
             pw_hash = bcrypt.generate_password_hash(password).decode('utf-8')
             
-            otp_code = ''.join([str(random.randint(0, 9)) for _ in range(6)])
-            
             user_data = {
                 'username': username,
                 'email': email,
                 'kata_sandi': pw_hash,
                 'peran': role_name,
-                'is_verified': False,
-                'otp_code': otp_code
+                'is_verified': True
             }
             
             # Gunakan email (atau sanitasi email) sebagai Document ID agar mudah dicari
@@ -102,55 +99,13 @@ def register():
             user_doc_ref = users_ref.document(doc_id)
             user_doc_ref.set(user_data)
             
-            # Send Email
-            try:
-                msg = Message('Verifikasi Akun GARDA Anda', recipients=[email])
-                current_year = datetime.datetime.now().year
-                msg.html = render_template('email_otp.html', username=username, otp_code=otp_code, year=current_year)
-                mail.send(msg)
-                print(f"[SUCCESS] Email OTP terkirim ke {email}")
-            except Exception as e:
-                print(f"[ERROR] Gagal mengirim email: {e}")
-                print(f"[BACKUP] OTP UNTUK EMAIL {email} ADALAH: {otp_code}")
-                flash('Gagal mengirim email, pastikan konfigurasi SMTP benar. Cek console untuk kode OTP.', 'warning')
-            
-            flash('Akun berhasil dibuat! Silakan cek email Anda untuk kode verifikasi.', 'success')
-            return redirect(url_for('auth.verify_email', email=email))
+            flash('Akun berhasil dibuat! Silakan login.', 'success')
+            return redirect(url_for('auth.login'))
         else:
             flash('Sistem Firestore belum siap.', 'danger')
         
     return render_template('register.html', title='Register')
 
-@auth.route("/verify-email", methods=['GET', 'POST'])
-def verify_email():
-    email = request.args.get('email')
-    
-    if request.method == 'POST':
-        email_post = request.form.get('email')
-        otp_input = request.form.get('otp')
-        
-        from flask import current_app
-        if current_app.db_firestore:
-            users_ref = current_app.db_firestore.collection('website')
-            docs = users_ref.where('email', '==', email_post).limit(1).get()
-            if docs:
-                user_doc = docs[0]
-                user_data = user_doc.to_dict()
-                
-                if user_data.get('otp_code') == otp_input:
-                    user_doc.reference.update({
-                        'is_verified': True,
-                        'otp_code': None
-                    })
-                    flash('Email berhasil diverifikasi! Silakan login.', 'success')
-                    return redirect(url_for('auth.login'))
-                else:
-                    flash('Kode OTP tidak valid.', 'danger')
-                    return redirect(url_for('auth.verify_email', email=email_post))
-                    
-        flash('Terjadi kesalahan sistem.', 'danger')
-        
-    return render_template('verify_email.html', title='Verifikasi Email', email=email)
 
 @auth.route("/logout")
 def logout():
