@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Garda Healthcare</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.1/socket.io.js"></script>
+    <script>
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        if (savedTheme === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        }
+    </script>
+</head>
+<body>
+
+    <div class="app-container">
+        {% if current_user.is_authenticated %}
+        <!-- Sidebar -->
+        <aside class="sidebar" id="app-sidebar">
+            <div class="sidebar-brand">
+                <i class="fa-solid fa-heart-pulse"></i>
+                <span class="sidebar-text" style="color: white; font-weight: 800;">GARDA</span>
+            </div>
+            
+            <ul class="nav-menu" style="margin-top: 24px;">
+                <!-- Menu Utama -->
+                <li style="padding: 12px 16px 4px; font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px;">Menu Utama</li>
+                <li class="nav-item">
+                    <a href="{{ url_for('main.dashboard') }}" class="nav-link {% if request.endpoint == 'main.dashboard' %}active{% endif %}">
+                        <i class="fa-solid fa-gauge"></i> <span class="sidebar-text">Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('main.data_pasien') }}" class="nav-link {% if request.endpoint == 'main.data_pasien' %}active{% endif %}">
+                        <i class="fa-solid fa-hospital-user"></i> <span class="sidebar-text">Data Pasien</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('main.data_tenaga_kesehatan') }}" class="nav-link {% if request.endpoint == 'main.data_tenaga_kesehatan' %}active{% endif %}">
+                        <i class="fa-solid fa-user-nurse"></i> <span class="sidebar-text">Tenaga Kesehatan</span>
+                    </a>
+                </li>
+            </ul>
+            
+            <div style="padding: 24px;">
+                <a href="{{ url_for('auth.logout') }}" class="btn" style="width: 100%; background: rgba(255,255,255,0.05); color: white; justify-content: center;">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> <span class="sidebar-text">Keluar</span>
+                </a>
+            </div>
+        </aside>
+        {% endif %}
+
+        <!-- Main Content -->
+        <main class="main-content">
+            {% if current_user.is_authenticated %}
+            <!-- Top Header -->
+            <header class="top-header">
+                <div style="display: flex; align-items: center; gap: 16px;">
+                    <h2 style="margin: 0; font-size: 18px; color: var(--text-primary); font-weight: 600;">{{ title }}</h2>
+                </div>
+                <div style="display: flex; align-items: center; gap: 24px;">
+                    <div style="position: relative; color: var(--text-secondary); cursor: pointer;">
+                        <i class="fa-regular fa-bell fa-lg"></i>
+                        <span style="position: absolute; top: -4px; right: -4px; width: 8px; height: 8px; background: var(--danger-color); border-radius: 50%;"></span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 12px; border-left: 1px solid var(--surface-border); padding-left: 24px; position: relative;">
+                        <div style="text-align: right;">
+                            <div style="font-weight: 600; font-size: 14px; color: var(--text-primary);">{{ current_user.username }}</div>
+                            <div style="font-size: 12px; color: var(--text-secondary);">
+                                {% if current_user.role %}
+                                    {{ current_user.role.name }}
+                                {% else %}
+                                    {{ current_user.role_name }}
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--accent-primary); display: flex; align-items: center; justify-content: center; font-weight: bold; color: white;">
+                            {{ current_user.username[0]|upper }}
+                        </div>
+                    </div>
+                </div>
+            </header>
+            {% endif %}
+
+            <div class="content-area">
+                <div id="global-alerts"></div>
+                
+                <div id="flash-container" style="position: fixed; top: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 16px; pointer-events: none;">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="toast-notification toast-{{ category }} flash-msg">
+                                    <div class="toast-content">
+                                        <div class="toast-icon">
+                                            <i class="fa-solid {% if category == 'success' %}fa-check{% else %}fa-exclamation{% endif %}"></i>
+                                        </div>
+                                        <div class="toast-text" style="text-align: left;">
+                                            <strong style="display: block; color: var(--text-primary); font-size: 15px; margin-bottom: 2px;">
+                                                {% if category == 'success' %}Berhasil!{% else %}Informasi{% endif %}
+                                            </strong>
+                                            <span style="color: var(--text-secondary); font-size: 13px;">{{ message }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="toast-progress"></div>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                </div>
+
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+
+    <!-- Global JavaScript -->
+    {% if current_user.is_authenticated %}
+    <script>
+        // Auto remove flash messages after 5 seconds
+        document.addEventListener('DOMContentLoaded', () => {
+            const flashes = document.querySelectorAll('.flash-msg');
+            flashes.forEach(flash => {
+                setTimeout(() => {
+                    flash.classList.add('toast-exit');
+                    setTimeout(() => flash.remove(), 400); // Wait for exit animation
+                }, 5000);
+            });
+        });
+    </script>
+    {% endif %}
+    {% block scripts %}{% endblock %}
+</body>
+</html>

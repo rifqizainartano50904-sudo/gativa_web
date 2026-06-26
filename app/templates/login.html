@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="display: grid; grid-template-columns: 1fr 1fr; height: 100vh; position: absolute; top: 0; left: 0; width: 100%; background: var(--brand-green-bg); color: #ffffff;">
+    <!-- Left Side: Icon and Text -->
+    <div style="background: rgba(0, 0, 0, 0.15); position: relative; border-right: 1px solid rgba(255, 255, 255, 0.1); display: flex; flex-direction: column; justify-content: center; padding: 64px;">
+        <div style="font-size: 80px; color: var(--accent-primary); margin-bottom: 40px;">
+            <i class="fa-solid fa-heart-pulse"></i>
+        </div>
+        <h1 style="font-size: 56px; font-weight: 700; margin-bottom: 24px; line-height: 1.1; color: #fff; position: relative; z-index: 1;">Sistem Triage<br>Masa Depan.</h1>
+        <p style="font-size: 20px; color: rgba(255, 255, 255, 0.85); max-width: 450px; line-height: 1.6; position: relative; z-index: 1;">Memantau asupan gizi dan status pasien secara real-time dengan akurasi tinggi untuk fasilitas kesehatan yang modern.</p>
+    </div>
+    
+    <!-- Right Side: Login Form -->
+    <div style="display: flex; align-items: center; justify-content: center; padding: 48px;">
+        <div style="width: 100%; max-width: 400px;">
+            <div style="text-align: left; margin-bottom: 32px;">
+                <h2 class="text-gradient">Selamat Datang</h2>
+                <p style="color: rgba(255, 255, 255, 0.8); font-size: 14px;">Silakan masuk ke akun Anda</p>
+            </div>
+
+            <form method="POST" action="">
+                <div class="form-group">
+                    <label class="form-label" style="color: rgba(255,255,255,0.9);">Email</label>
+                    <input type="email" name="email" class="form-control" style="background: rgba(0,0,0,0.2); color: white; border-color: rgba(255,255,255,0.1);" required placeholder="admin@garda.id">
+                </div>
+                <div class="form-group" style="position: relative;">
+                    <label class="form-label" style="color: rgba(255,255,255,0.9);">Password</label>
+                    <input type="password" name="password" id="loginPassword" class="form-control" style="background: rgba(0,0,0,0.2); color: white; border-color: rgba(255,255,255,0.1); padding-right: 40px;" required placeholder="••••••••">
+                    <i class="fa-solid fa-eye" id="toggleLoginPassword" style="position: absolute; right: 15px; top: 38px; cursor: pointer; color: rgba(255,255,255,0.5);" onclick="togglePwd('loginPassword', 'toggleLoginPassword')"></i>
+                </div>
+                <div class="form-group" style="display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <input type="checkbox" name="remember" id="remember">
+                        <label for="remember" style="color: rgba(255,255,255,0.8); font-size: 14px; cursor: pointer;">Ingat Saya</label>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 14px; font-size: 16px; margin-bottom: 16px;">
+                    Masuk Dashboard
+                </button>
+                <div style="text-align: center; margin-top: 24px; font-size: 14px; color: rgba(255, 255, 255, 0.7);">
+                    Belum punya akun? <a href="{{ url_for('auth.register') }}" style="color: var(--accent-primary); text-decoration: none; font-weight: 600;">Daftar sebagai Admin</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+function togglePwd(inputId, iconId) {
+    var input = document.getElementById(inputId);
+    var icon = document.getElementById(iconId);
+    if (input.type === "password") {
+        input.type = "text";
+        icon.classList.remove("fa-eye");
+        icon.classList.add("fa-eye-slash");
+    } else {
+        input.type = "password";
+        icon.classList.remove("fa-eye-slash");
+        icon.classList.add("fa-eye");
+    }
+}
+</script>
+{% endblock %}
